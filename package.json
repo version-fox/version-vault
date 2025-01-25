@@ -13,8 +13,6 @@
     "wrangler": "^3.105.1"
   },
   "dependencies": {
-    "@hono/node-server": "^1.13.7",
-    "dotenv": "^16.4.7",
     "hono": "^4.6.18"
   },
   "packageManager": "yarn@4.6.0"
