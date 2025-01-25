@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { Variables } from "./types";
 import { assert } from "./utils/assert";
 import { Octokit } from "./utils/octokit";
-import { LAST_MODIFIED } from "./constants";
+import { CACHE_CONTROL, LAST_MODIFIED } from "./constants";
 
 export const ignition = () => {
   const app = new Hono<{ Bindings: Variables }>();
@@ -11,48 +11,20 @@ export const ignition = () => {
     assert(ctx.env.GITHUB_TOKEN, "GITHUB_TOKEN is not set");
     const request = ctx.req.raw;
 
-    const useCache =
-      request.headers.get("Cache-Control") === "no-cache" ||
-      !Boolean(ctx.req.query("force"));
-
-    console.log("🚀 ~ app.get ~ useCache:", useCache);
-
     const cacheUrl = new URL(request.url);
+    // cache ignore query params
     cacheUrl.search = "";
+    const cacheKey = new Request(cacheUrl.toString(), request);
 
-    console.log("🚀 ~ app.get ~ cacheUrl:", cacheUrl, cacheUrl.toString());
+    let skipCache = Boolean(ctx.req.query("force"));
 
-    // Construct the cache key from the cache URL
-    const cacheKey = new Request(cacheUrl.toString());
     const cache = await caches.open("pyenv-versions");
 
-    if (useCache) {
-      // Check whether the value is already available in the cache
-      // if not, you will need to fetch it from origin, and store it in the cache
-      const response = await cache.match(cacheKey);
-      console.log("🚀 ~ app.get ~ response:", response);
-
-      if (response) {
-        console.log("Cache hit");
-        // check last-modified header is not older than 25 minutes
-        const lastModified = response.headers.get(LAST_MODIFIED);
-
-        if (lastModified) {
-          const lastModifiedDate = new Date(lastModified);
-          const now = new Date();
-          const diff = now.getTime() - lastModifiedDate.getTime();
-          const diffMinutes = Math.round(diff / 60000);
-
-          if (diffMinutes < 25) {
-            console.log("Cache hit in 25 minutes");
-            return response;
-          }
-        }
-
-        // delete the cache
-        console.log("Cache hit but older than 25 minutes");
-        cache.delete(cacheKey);
-      }
+    // Check whether the value is already available in the cache
+    // if not, you will need to fetch it from origin, and store it in the cache
+    const response = await cache.match(cacheKey);
+    if (!skipCache && response) {
+      return response;
     }
 
     const repo = "pyenv/pyenv";
@@ -106,6 +78,7 @@ export const ignition = () => {
       200,
       {
         [LAST_MODIFIED]: now,
+        [CACHE_CONTROL]: "max-age=1200, s-maxage=1200",
       }
     );
 
