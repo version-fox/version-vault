@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { Variables } from "./types";
+import { cache } from "hono/cache";
 
 export const ignition = () => {
   const app = new Hono<{ Bindings: Variables }>();
@@ -11,6 +12,12 @@ export const ignition = () => {
       {
         headers: {
           authorization: `Bearer ${ctx.env.GITHUB_TOKEN}`,
+        },
+        cf: {
+          // Always cache this fetch regardless of content type
+          cacheTtl: 30 * 60,
+          cacheEverything: true,
+          cacheKey: "pyenv-versions",
         },
       }
     );
@@ -60,11 +67,18 @@ export const ignition = () => {
     const response = {
       tagName,
       versions,
-      //   _versions,
     };
 
     return ctx.json(response);
   });
+
+  app.get(
+    "*",
+    cache({
+      cacheName: (ctx) => ctx.req.path,
+      cacheControl: "max-age=300",
+    })
+  );
 
   return app;
 };

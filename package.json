@@ -1,5 +1,5 @@
 {
-  "name": "vfox-versions-registry",
+  "name": "@version-fox/version-vault",
   "private": true,
   "version": "1.0.0",
   "main": "index.js",

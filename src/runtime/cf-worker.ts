@@ -1,5 +1,5 @@
 import { Variables } from "@/types";
-import { ignition } from "../app";
+import { ignition } from "../ignition";
 
 const app = ignition();
 
