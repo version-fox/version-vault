@@ -7,6 +7,3 @@ workers_dev = false
 # wrangler.toml (wrangler v3.88.0^)
 [observability.logs]
 enabled = true
-
-[vars]
-GITHUB_TOKEN = ""
