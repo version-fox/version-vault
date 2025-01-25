@@ -5,7 +5,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "tsx watch ./src/runtime/node-server"
+    "dev": "tsx watch ./src/runtime/node-server",
+    "workers:dev": "wrangler dev"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250109.0",

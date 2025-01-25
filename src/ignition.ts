@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { Variables } from "./types";
 import { assert } from "./utils/assert";
+import { Octokit } from "./utils/octokit";
+import { LAST_MODIFIED } from "./constants";
 
 export const ignition = () => {
   const app = new Hono<{ Bindings: Variables }>();
@@ -8,47 +10,58 @@ export const ignition = () => {
   app.get("/pyenv-versions", async (ctx) => {
     assert(ctx.env.GITHUB_TOKEN, "GITHUB_TOKEN is not set");
     const request = ctx.req.raw;
+
+    const useCache =
+      request.headers.get("Cache-Control") === "no-cache" ||
+      !Boolean(ctx.req.query("force"));
+
+    console.log("🚀 ~ app.get ~ useCache:", useCache);
+
     const cacheUrl = new URL(request.url);
+    cacheUrl.search = "";
+
+    console.log("🚀 ~ app.get ~ cacheUrl:", cacheUrl, cacheUrl.toString());
 
     // Construct the cache key from the cache URL
-    const cacheKey = new Request(cacheUrl.toString(), request);
-
+    const cacheKey = new Request(cacheUrl.toString());
     const cache = await caches.open("pyenv-versions");
 
-    // Check whether the value is already available in the cache
-    // if not, you will need to fetch it from origin, and store it in the cache
-    const response = await cache.match(cacheKey);
+    if (useCache) {
+      // Check whether the value is already available in the cache
+      // if not, you will need to fetch it from origin, and store it in the cache
+      const response = await cache.match(cacheKey);
+      console.log("🚀 ~ app.get ~ response:", response);
 
-    if (response) {
-      // check last-modified header is not older than 25 minutes
-      const lastModified = response.headers.get("Last-Modified");
+      if (response) {
+        console.log("Cache hit");
+        // check last-modified header is not older than 25 minutes
+        const lastModified = response.headers.get(LAST_MODIFIED);
 
-      if (lastModified) {
-        const lastModifiedDate = new Date(lastModified);
-        const now = new Date();
-        const diff = now.getTime() - lastModifiedDate.getTime();
-        const diffMinutes = Math.round(diff / 60000);
+        if (lastModified) {
+          const lastModifiedDate = new Date(lastModified);
+          const now = new Date();
+          const diff = now.getTime() - lastModifiedDate.getTime();
+          const diffMinutes = Math.round(diff / 60000);
 
-        if (diffMinutes < 25) {
-          return response;
+          if (diffMinutes < 25) {
+            console.log("Cache hit in 25 minutes");
+            return response;
+          }
         }
-      }
 
-      cache.delete(cacheKey);
+        // delete the cache
+        console.log("Cache hit but older than 25 minutes");
+        cache.delete(cacheKey);
+      }
     }
 
     const repo = "pyenv/pyenv";
-    const result = await fetch(
-      `https://api.github.com/repos/${repo}/releases/latest`,
-      {
-        headers: {
-          authorization: `Bearer ${ctx.env.GITHUB_TOKEN}`,
-        },
-      }
-    );
+
+    const octokit = new Octokit(ctx.env.GITHUB_TOKEN);
+
+    const result = await octokit.getLatestRelease(repo);
 
     if (!result.ok) {
-      console.log(await result.json());
       return ctx.json({
         error: "Failed to fetch latest release",
         json: await result.json(),
@@ -56,26 +69,15 @@ export const ignition = () => {
     }
 
     const json = (await result.json()) as any;
-
     const tagName = json.tag_name;
 
     // /repos/{owner}/{repo}/contents/{path}
     // https://github.com/pyenv/pyenv/tree/master/plugins/python-build/share/python-build
     const path = "plugins/python-build/share/python-build";
 
-    const files = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${path}`,
-      {
-        headers: {
-          authorization: `Bearer ${ctx.env.GITHUB_TOKEN}`,
-          "X-GitHub-Api-Version": " 2022-11-28",
-          Accept: "application/vnd.github+json",
-        },
-      }
-    );
+    const files = await octokit.getContents(repo, path, tagName);
 
     if (!files.ok) {
-      console.log(await files.json());
       return ctx.json({
         error: "Failed to fetch files",
         json: await result.json(),
@@ -93,16 +95,17 @@ export const ignition = () => {
       })
       .filter(Boolean);
 
+    const now = new Date().toUTCString();
+
     const resp = ctx.json(
       {
+        updated: now,
         tagName,
         versions,
       },
       200,
       {
-        // Set cache control headers to cache on browser for 25 minutes
-        "Cache-Control": "max-age=1500",
-        "Last-Modified": new Date().toUTCString(),
+        [LAST_MODIFIED]: now,
       }
     );
 
