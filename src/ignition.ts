@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { Variables } from "./types";
-import { cache } from "hono/cache";
 
 export const ignition = () => {
   const app = new Hono<{ Bindings: Variables }>();
@@ -23,6 +22,7 @@ export const ignition = () => {
     );
 
     if (!result.ok) {
+      console.log(await result.json());
       return ctx.json({
         error: "Failed to fetch latest release",
       });
@@ -68,17 +68,11 @@ export const ignition = () => {
       tagName,
       versions,
     };
-
-    return ctx.json(response);
+    return ctx.json(response, 200, {
+      // Set cache control headers to cache on browser for 25 minutes
+      "Cache-Control": "max-age=1500",
+    });
   });
-
-  app.get(
-    "*",
-    cache({
-      cacheName: (ctx) => ctx.req.path,
-      cacheControl: "max-age=300",
-    })
-  );
 
   return app;
 };
