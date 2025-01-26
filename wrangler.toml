@@ -4,6 +4,8 @@ compatibility_date = "2025-01-25"
 main = "./src/index.ts"
 workers_dev = false
 
-# wrangler.toml (wrangler v3.88.0^)
 [observability.logs]
 enabled = true
+
+[placement]
+mode = "smart"
