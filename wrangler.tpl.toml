@@ -4,6 +4,10 @@ compatibility_date = "2025-01-25"
 main = "./src/index.ts"
 workers_dev = false
 
+kv_namespaces = [
+  { binding = "STORAGE", id = "{{KV_STORAGE_ID}}" }
+]
+
 [observability.logs]
 enabled = true
 

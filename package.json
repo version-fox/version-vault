@@ -11,8 +11,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250109.0",
-    "wrangler": "^3.105.1",
-    "@opensumi/cfworker-builder": "^1.0.3"
+    "@opensumi/cfworker-builder": "^1.0.3",
+    "wrangler": "^3.105.1"
   },
   "dependencies": {
     "hono": "^4.6.18"
