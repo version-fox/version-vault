@@ -1,11 +1,7 @@
 declare interface HonoEnv {
-  Bindings: Bindings;
+  Bindings: Variables;
 }
 
 declare interface Variables {
-}
-
-declare interface Bindings {
   GITHUB_TOKEN: string;
-  STORAGE: KVNamespace;
 }

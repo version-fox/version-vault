@@ -5,15 +5,24 @@ import { Hono } from "hono";
 
 const app = new Hono<HonoEnv>();
 
-const CACHE_KEY = "python/pyenv/versions-cache";
-
 app.get("/", async (ctx) => {
   assert(ctx.env.GITHUB_TOKEN, "GITHUB_TOKEN is not set");
+  const request = ctx.req.raw;
+
+  const cacheUrl = new URL(request.url);
+  // cache ignore query params
+  cacheUrl.search = "";
+  const cacheKey = new Request(cacheUrl.toString(), request);
+
   let skipCache = Boolean(ctx.req.query("force"));
 
-  const cache = await ctx.env.STORAGE.get(CACHE_KEY, 'json');
-  if (!skipCache && cache) {
-    return response(cache);
+  const cache = await caches.open("pyenv-versions");
+
+  // Check whether the value is already available in the cache
+  // if not, you will need to fetch it from origin, and store it in the cache
+  const response = await cache.match(cacheKey);
+  if (!skipCache && response) {
+    return response;
   }
 
   const repo = "pyenv/pyenv";
@@ -58,31 +67,21 @@ app.get("/", async (ctx) => {
 
   const now = new Date().toUTCString();
 
-  const versionJson = {
-    updated: now,
-    tagName,
-    versions,
-  };
-
-  ctx.executionCtx.waitUntil(ctx.env.STORAGE.put(CACHE_KEY, JSON.stringify(versionJson), {
-    // seconds
-    expirationTtl: 1200,
-  }));
-
-  return response(
-    versionJson,
+  const resp = ctx.json(
+    {
+      updated: now,
+      tagName,
+      versions,
+    },
+    200,
+    {
+      [LAST_MODIFIED]: now,
+      [CACHE_CONTROL]: "max-age=1200, s-maxage=1200",
+    }
   );
 
-  function response(json: any) {
-    return ctx.json(
-      json,
-      200,
-      {
-        [LAST_MODIFIED]: now,
-        [CACHE_CONTROL]: "max-age=1200, s-maxage=1200",
-      }
-    );
-  }
+  ctx.executionCtx.waitUntil(cache.put(cacheKey, resp.clone()));
+  return resp;
 });
 
 export default app;
