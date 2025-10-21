@@ -41,14 +41,15 @@ function filterBuilds(
  * Transform PythonBuilds to include version field
  */
 function transformBuilds(builds: PythonBuilds) {
-  const transformed: Record<string, Omit<PythonBuildInfo, 'major' | 'minor' | 'patch' | 'prerelease'> & { version: string }> = {};
+  const transformed: Array<Omit<PythonBuildInfo, 'major' | 'minor' | 'patch' | 'prerelease'> & { key: string; version: string }> = [];
 
   for (const [key, build] of Object.entries(builds)) {
     const { major, minor, patch, prerelease, ...rest } = build;
-    transformed[key] = {
+    transformed.push({
+      key,
       ...rest,
       version: buildVersion(build),
-    };
+    });
   }
 
   return transformed;
@@ -121,6 +122,8 @@ app.get("/", async (ctx) => {
 
   const resp = ctx.json(
     {
+      repo,
+      dataSource: path,
       updated: now,
       tagName,
       versions: transformedVersions,
