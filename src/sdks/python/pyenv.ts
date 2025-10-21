@@ -8,7 +8,7 @@ const app = new Hono<HonoEnv>();
 
 app.get("/", async (ctx) => {
   const githubToken = env(ctx).GITHUB_TOKEN;
-  assert(githubToken, "GITHUB_TOKEN is not set");
+  assert(githubToken, "GITHUB_TOKEN is not set", 503);
 
   const cacheKey = createCacheKey(ctx.req.raw);
   const skipCache = Boolean(ctx.req.query("force"));
