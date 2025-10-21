@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import pythonPyenvVersions from "./pyenv-versions";
-import pythonFtpVersions from "./ftp-versions";
-import uvBuildVersions from "./uv-build-versions";
+import pythonPyenvVersions from "./pyenv";
+import pythonFtpVersions from "./ftp";
+import uvBuildVersions from "./uv-build";
 
 const app = new Hono<HonoEnv>();
 

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import pythonRoutes from './sdks/python';
-import pythonPyenvVersions from './sdks/python/pyenv-versions';
+import pythonPyenvVersions from './sdks/python/pyenv';
 
 export const ignition = () => {
   const app = new Hono<HonoEnv>();

@@ -2,7 +2,7 @@ import { assert } from "@/utils/assert";
 import { Octokit } from "@/utils/octokit";
 import { Hono } from "hono";
 import { env } from 'hono/adapter'
-import { withCache, createCacheKey } from "./cache-helper";
+import { withCache, createCacheKey } from "../../utils/cache-helper";
 
 const app = new Hono<HonoEnv>();
 
