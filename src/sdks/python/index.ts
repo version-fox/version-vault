@@ -1,12 +1,10 @@
 import { Hono } from "hono";
-import pythonPyenvVersions from "./pyenv";
-import pythonFtpVersions from "./ftp";
+import pyenvVersions from "./pyenv";
 import uvBuildVersions from "./uv-build";
 
 const app = new Hono<HonoEnv>();
 
-app.route("/pyenv", pythonPyenvVersions);
-app.route("/ftp", pythonFtpVersions);
+app.route("/pyenv", pyenvVersions);
 app.route("/uv-build", uvBuildVersions);
 
 export default app;
