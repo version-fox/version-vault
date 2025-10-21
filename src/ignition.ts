@@ -1,13 +1,16 @@
 import { Hono } from "hono";
-import pythonPyenvVersions from "./sdks/python/pyenv-versions";
-import pythonFtpVersions from "./sdks/python/ftp-versions";
+import pythonRoutes from './sdks/python';
+import pythonPyenvVersions from './sdks/python/pyenv';
+import { errorHandler } from "@/utils/error-handler";
 
 export const ignition = () => {
   const app = new Hono<HonoEnv>();
 
+  // Apply global error handler
+  app.onError(errorHandler);
+
   app.route("/pyenv-versions", pythonPyenvVersions);
-  app.route("/python/pyenv", pythonPyenvVersions);
-  app.route("/python/ftp", pythonFtpVersions);
+  app.route("/python", pythonRoutes);
 
   return app;
 };
