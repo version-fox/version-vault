@@ -15,6 +15,6 @@
     "@opensumi/cfworker-builder": "^1.0.3"
   },
   "dependencies": {
-    "hono": "^4.6.18"
+    "hono": "^4.10.1"
   }
 }
