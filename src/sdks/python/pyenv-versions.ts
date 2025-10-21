@@ -48,7 +48,7 @@ app.get("/", async (ctx) => {
   // https://github.com/pyenv/pyenv/tree/master/plugins/python-build/share/python-build
   const path = "plugins/python-build/share/python-build";
 
-  const files = await octokit.getContents(repo, path, tagName);
+  const files = await octokit.listPath(repo, path, tagName);
 
   if (!files.ok) {
     return ctx.json({

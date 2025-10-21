@@ -3,8 +3,56 @@ import { assert } from "@/utils/assert";
 import { Octokit } from "@/utils/octokit";
 import { Hono } from "hono";
 import { env } from 'hono/adapter'
+import { PythonBuilds, PythonBuildInfo } from "./types";
 
 const app = new Hono<HonoEnv>();
+
+/**
+ * Build version string from Python build info
+ * @example buildVersion({ major: 3, minor: 15, patch: 0, prerelease: "a1" }) => "3.15.0a1"
+ * @example buildVersion({ major: 3, minor: 12, patch: 1, prerelease: null }) => "3.12.1"
+ */
+function buildVersion(info: PythonBuildInfo): string {
+  const version = `${info.major}.${info.minor}.${info.patch}`;
+  return info.prerelease ? `${version}${info.prerelease}` : version;
+}
+
+/**
+ * Filter Python builds based on query parameters
+ */
+function filterBuilds(
+  builds: PythonBuilds,
+  filters: { os?: string; arch?: string; libc?: string }
+): PythonBuilds {
+  const filtered: PythonBuilds = {};
+
+  for (const [key, build] of Object.entries(builds)) {
+    if (filters.os && build.os !== filters.os) continue;
+    if (filters.arch && build.arch.family !== filters.arch) continue;
+    if (filters.libc && build.libc !== filters.libc) continue;
+    
+    filtered[key] = build;
+  }
+
+  return filtered;
+}
+
+/**
+ * Transform PythonBuilds to include version field
+ */
+function transformBuilds(builds: PythonBuilds) {
+  const transformed: Record<string, Omit<PythonBuildInfo, 'major' | 'minor' | 'patch' | 'prerelease'> & { version: string }> = {};
+
+  for (const [key, build] of Object.entries(builds)) {
+    const { major, minor, patch, prerelease, ...rest } = build;
+    transformed[key] = {
+      ...rest,
+      version: buildVersion(build),
+    };
+  }
+
+  return transformed;
+}
 
 app.get("/", async (ctx) => {
   const githubToken = env(ctx).GITHUB_TOKEN;
@@ -18,7 +66,7 @@ app.get("/", async (ctx) => {
 
   let skipCache = Boolean(ctx.req.query("force"));
 
-  const cache = await caches.open("pyenv-versions");
+  const cache = await caches.open("uv-build-versions");
 
   // Check whether the value is already available in the cache
   // if not, you will need to fetch it from origin, and store it in the cache
@@ -27,7 +75,7 @@ app.get("/", async (ctx) => {
     return response;
   }
 
-  const repo = "pyenv/pyenv";
+  const repo = "astral-sh/uv";
 
   const octokit = new Octokit(githubToken);
 
@@ -44,10 +92,10 @@ app.get("/", async (ctx) => {
   const tagName = json.tag_name;
 
   // /repos/{owner}/{repo}/contents/{path}
-  // https://github.com/pyenv/pyenv/tree/master/plugins/python-build/share/python-build
-  const path = "plugins/python-build/share/python-build";
+  // https://github.com/astral-sh/uv/blob/main/crates/uv-python/download-metadata.json
+  const path = "crates/uv-python/download-metadata.json";
 
-  const files = await octokit.getContents(repo, path, tagName);
+  const files = await octokit.downloadFile(repo, path, tagName);
 
   if (!files.ok) {
     return ctx.json({
@@ -56,16 +104,18 @@ app.get("/", async (ctx) => {
     });
   }
 
-  const _versions = (await files.json()) as any[];
-  const versions = _versions
-    .map((v) => {
-      if (v.type === "dir") {
-        return;
-      }
+  const versions = (await files.json()) as PythonBuilds;
 
-      return v.name;
-    })
-    .filter(Boolean);
+  // Apply filters
+  const filters = {
+    os: ctx.req.query("os"),
+    arch: ctx.req.query("arch"),
+    libc: ctx.req.query("libc"),
+  };
+  const filteredVersions = filterBuilds(versions, filters);
+
+  // Transform to include version field
+  const transformedVersions = transformBuilds(filteredVersions);
 
   const now = new Date().toUTCString();
 
@@ -73,7 +123,7 @@ app.get("/", async (ctx) => {
     {
       updated: now,
       tagName,
-      versions,
+      versions: transformedVersions,
     },
     200,
     {
