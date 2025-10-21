@@ -1,9 +1,9 @@
-import { CACHE_CONTROL, LAST_MODIFIED } from "@/constants";
 import { assert } from "@/utils/assert";
 import { Octokit } from "@/utils/octokit";
 import { Hono } from "hono";
 import { env } from 'hono/adapter'
 import { PythonBuilds, PythonBuildInfo } from "./types";
+import { withCache, createCacheKey } from "./cache-helper";
 
 const app = new Hono<HonoEnv>();
 
@@ -58,85 +58,63 @@ function transformBuilds(builds: PythonBuilds) {
 app.get("/", async (ctx) => {
   const githubToken = env(ctx).GITHUB_TOKEN;
   assert(githubToken, "GITHUB_TOKEN is not set");
-  const request = ctx.req.raw;
 
-  const cacheUrl = new URL(request.url);
-  // cache ignore query params
-  cacheUrl.search = "";
-  const cacheKey = new Request(cacheUrl.toString(), request);
+  const cacheKey = createCacheKey(ctx.req.raw);
+  const skipCache = Boolean(ctx.req.query("force"));
 
-  let skipCache = Boolean(ctx.req.query("force"));
+  return withCache(
+    ctx,
+    { cacheName: "uv-build-versions", skipCache, cacheKey },
+    async () => {
+      const repo = "astral-sh/uv";
+      const octokit = new Octokit(githubToken);
 
-  const cache = await caches.open("uv-build-versions");
+      const result = await octokit.getLatestRelease(repo);
 
-  // Check whether the value is already available in the cache
-  // if not, you will need to fetch it from origin, and store it in the cache
-  const response = await cache.match(cacheKey);
-  if (!skipCache && response) {
-    return response;
-  }
+      if (!result.ok) {
+        throw new Error(`Failed to fetch latest release: ${await result.text()}`);
+      }
 
-  const repo = "astral-sh/uv";
+      const json = (await result.json()) as any;
+      const tagName = json.tag_name;
 
-  const octokit = new Octokit(githubToken);
+      // /repos/{owner}/{repo}/contents/{path}
+      // https://github.com/astral-sh/uv/blob/main/crates/uv-python/download-metadata.json
+      const path = "crates/uv-python/download-metadata.json";
 
-  const result = await octokit.getLatestRelease(repo);
+      const files = await octokit.downloadFile(repo, path, tagName);
 
-  if (!result.ok) {
-    return ctx.json({
-      error: "Failed to fetch latest release",
-      json: await result.json(),
-    });
-  }
+      if (!files.ok) {
+        throw new Error(`Failed to fetch files: ${await files.text()}`);
+      }
 
-  const json = (await result.json()) as any;
-  const tagName = json.tag_name;
+      const versions = (await files.json()) as PythonBuilds;
 
-  // /repos/{owner}/{repo}/contents/{path}
-  // https://github.com/astral-sh/uv/blob/main/crates/uv-python/download-metadata.json
-  const path = "crates/uv-python/download-metadata.json";
+      // Apply filters
+      const filters = {
+        os: ctx.req.query("os"),
+        arch: ctx.req.query("arch"),
+        libc: ctx.req.query("libc"),
+      };
+      const filteredVersions = filterBuilds(versions, filters);
 
-  const files = await octokit.downloadFile(repo, path, tagName);
+      // Transform to include version field
+      const transformedVersions = transformBuilds(filteredVersions);
 
-  if (!files.ok) {
-    return ctx.json({
-      error: "Failed to fetch files",
-      json: await result.json(),
-    });
-  }
+      const now = new Date().toUTCString();
 
-  const versions = (await files.json()) as PythonBuilds;
-
-  // Apply filters
-  const filters = {
-    os: ctx.req.query("os"),
-    arch: ctx.req.query("arch"),
-    libc: ctx.req.query("libc"),
-  };
-  const filteredVersions = filterBuilds(versions, filters);
-
-  // Transform to include version field
-  const transformedVersions = transformBuilds(filteredVersions);
-
-  const now = new Date().toUTCString();
-
-  const resp = ctx.json(
-    {
-      repo,
-      dataSource: path,
-      updated: now,
-      tagName,
-      versions: transformedVersions,
-    },
-    200,
-    {
-      [LAST_MODIFIED]: now,
-      [CACHE_CONTROL]: "max-age=1200, s-maxage=1200",
+      return {
+        data: {
+          repo,
+          dataSource: path,
+          updated: now,
+          tagName,
+          versions: transformedVersions,
+        },
+        updated: now,
+      };
     }
   );
-
-  ctx.executionCtx.waitUntil(cache.put(cacheKey, resp.clone()));
-  return resp;
 });
 
 export default app;
