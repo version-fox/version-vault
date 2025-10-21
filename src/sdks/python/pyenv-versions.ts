@@ -2,11 +2,14 @@ import { CACHE_CONTROL, LAST_MODIFIED } from "@/constants";
 import { assert } from "@/utils/assert";
 import { Octokit } from "@/utils/octokit";
 import { Hono } from "hono";
+import { env } from 'hono/adapter'
 
 const app = new Hono<HonoEnv>();
 
 app.get("/", async (ctx) => {
-  assert(ctx.env.GITHUB_TOKEN, "GITHUB_TOKEN is not set");
+  const githubToken = env(ctx).GITHUB_TOKEN;
+
+  assert(githubToken, "GITHUB_TOKEN is not set");
   const request = ctx.req.raw;
 
   const cacheUrl = new URL(request.url);
@@ -27,7 +30,7 @@ app.get("/", async (ctx) => {
 
   const repo = "pyenv/pyenv";
 
-  const octokit = new Octokit(ctx.env.GITHUB_TOKEN);
+  const octokit = new Octokit(githubToken);
 
   const result = await octokit.getLatestRelease(repo);
 
