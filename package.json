@@ -17,6 +17,6 @@
   "dependencies": {
     "@hono/node-server": "^1.19.5",
     "hono": "^4.10.1",
-    "tsx": "^4.20.6"
+    "tsx": "^4.21.0"
   }
 }
