@@ -67,10 +67,16 @@ export async function withCache<T>(
 }
 
 /**
- * Create cache key from request, ignoring query params
+ * Create cache key from request.
+ *
+ * Query parameters are preserved so that filtered responses (e.g. `?os=darwin`)
+ * are cached separately from unfiltered ones. The `force` parameter is stripped
+ * because it only controls cache-bypass behavior and must not affect the key.
  */
 export function createCacheKey(request: Request): Request {
   const cacheUrl = new URL(request.url);
-  cacheUrl.search = "";
+  cacheUrl.searchParams.delete("force");
+  // Sort remaining params so equivalent queries map to the same cache entry
+  cacheUrl.searchParams.sort();
   return new Request(cacheUrl.toString(), request);
 }
