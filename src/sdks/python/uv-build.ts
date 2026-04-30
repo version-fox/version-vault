@@ -9,7 +9,7 @@ const app = new Hono<HonoEnv>();
 const UV_BUILD_REPO = "astral-sh/uv";
 const UV_BUILD_METADATA_PATH = "crates/uv-python/download-metadata.json";
 
-export interface UvBuildsResult {
+interface UvBuildsResult {
   repo: string;
   dataSource: string;
   tagName: string;
@@ -64,12 +64,19 @@ export function transformBuilds(builds: PythonBuilds) {
   return transformed;
 }
 
+/**
+ * Convert build metadata into a deduplicated, descending version list for
+ * pyenv-compatible endpoints.
+ */
 export function toVersionList(builds: PythonBuilds): string[] {
   return Array.from(
     new Set(Object.values(builds).map((build) => buildVersion(build)))
   ).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
 }
 
+/**
+ * Fetch the latest uv Python download metadata from the uv GitHub release.
+ */
 export async function fetchUvBuilds(githubToken: string): Promise<UvBuildsResult> {
   const octokit = new Octokit(githubToken);
 

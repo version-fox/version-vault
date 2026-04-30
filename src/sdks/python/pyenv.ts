@@ -7,6 +7,9 @@ import { fetchUvBuilds, filterBuilds, toVersionList } from "./uv-build";
 
 const app = new Hono<HonoEnv>();
 
+/**
+ * Enable uv-build mode for truthy rollout flag values.
+ */
 function isUvBuildEnabled(value?: string): boolean {
   return ["1", "true", "yes", "on", "uv-build", "uv_build"].includes(
     value?.toLowerCase() ?? ""
