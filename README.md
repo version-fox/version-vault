@@ -9,6 +9,8 @@ Get sdk versions
 curl https://vault.vfox.dev/python/pyenv
 ```
 
+Set `PYTHON_USE_UV_BUILD=1` to make the pyenv-compatible endpoints return a deduplicated version list derived from uv-build metadata. This keeps the existing response shape for clients while allowing gradual rollout from pyenv versions to uv-build versions.
+
 ### uv-build versions
 
 Fetch the Python builds list provided by [`astral-sh/uv`](https://github.com/astral-sh/uv) (sourced from `crates/uv-python/download-metadata.json` of the latest release).

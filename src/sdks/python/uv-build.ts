@@ -6,13 +6,22 @@ import { PythonBuilds, PythonBuildInfo } from "./types";
 import { withCache, createCacheKey } from "../../utils/cache-helper";
 
 const app = new Hono<HonoEnv>();
+const UV_BUILD_REPO = "astral-sh/uv";
+const UV_BUILD_METADATA_PATH = "crates/uv-python/download-metadata.json";
+
+export interface UvBuildsResult {
+  repo: string;
+  dataSource: string;
+  tagName: string;
+  versions: PythonBuilds;
+}
 
 /**
  * Build version string from Python build info
  * @example buildVersion({ major: 3, minor: 15, patch: 0, prerelease: "a1" }) => "3.15.0a1"
  * @example buildVersion({ major: 3, minor: 12, patch: 1, prerelease: null }) => "3.12.1"
  */
-function buildVersion(info: PythonBuildInfo): string {
+export function buildVersion(info: PythonBuildInfo): string {
   const version = `${info.major}.${info.minor}.${info.patch}`;
   return info.prerelease ? `${version}${info.prerelease}` : version;
 }
@@ -20,7 +29,7 @@ function buildVersion(info: PythonBuildInfo): string {
 /**
  * Filter Python builds based on query parameters
  */
-function filterBuilds(
+export function filterBuilds(
   builds: PythonBuilds,
   filters: { os?: string; arch?: string; libc?: string }
 ): PythonBuilds {
@@ -40,7 +49,7 @@ function filterBuilds(
 /**
  * Transform PythonBuilds to include version field
  */
-function transformBuilds(builds: PythonBuilds) {
+export function transformBuilds(builds: PythonBuilds) {
   const transformed: Array<Omit<PythonBuildInfo, 'major' | 'minor' | 'patch' | 'prerelease'> & { key: string; version: string }> = [];
 
   for (const [key, build] of Object.entries(builds)) {
@@ -55,6 +64,38 @@ function transformBuilds(builds: PythonBuilds) {
   return transformed;
 }
 
+export function toVersionList(builds: PythonBuilds): string[] {
+  return Array.from(
+    new Set(Object.values(builds).map((build) => buildVersion(build)))
+  ).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+}
+
+export async function fetchUvBuilds(githubToken: string): Promise<UvBuildsResult> {
+  const octokit = new Octokit(githubToken);
+
+  const result = await octokit.getLatestRelease(UV_BUILD_REPO);
+
+  if (!result.ok) {
+    throw new Error(`Failed to fetch latest release: ${await result.text()}`);
+  }
+
+  const json = (await result.json()) as any;
+  const tagName = json.tag_name;
+
+  const files = await octokit.downloadFile(UV_BUILD_REPO, UV_BUILD_METADATA_PATH, tagName);
+
+  if (!files.ok) {
+    throw new Error(`Failed to fetch files: ${await files.text()}`);
+  }
+
+  return {
+    repo: UV_BUILD_REPO,
+    dataSource: UV_BUILD_METADATA_PATH,
+    tagName,
+    versions: (await files.json()) as PythonBuilds,
+  };
+}
+
 app.get("/", async (ctx) => {
   const githubToken = env(ctx).GITHUB_TOKEN;
   assert(githubToken, "GITHUB_TOKEN is not set", 503);
@@ -66,29 +107,7 @@ app.get("/", async (ctx) => {
     ctx,
     { cacheName: "uv-build-versions", skipCache, cacheKey },
     async () => {
-      const repo = "astral-sh/uv";
-      const octokit = new Octokit(githubToken);
-
-      const result = await octokit.getLatestRelease(repo);
-
-      if (!result.ok) {
-        throw new Error(`Failed to fetch latest release: ${await result.text()}`);
-      }
-
-      const json = (await result.json()) as any;
-      const tagName = json.tag_name;
-
-      // /repos/{owner}/{repo}/contents/{path}
-      // https://github.com/astral-sh/uv/blob/main/crates/uv-python/download-metadata.json
-      const path = "crates/uv-python/download-metadata.json";
-
-      const files = await octokit.downloadFile(repo, path, tagName);
-
-      if (!files.ok) {
-        throw new Error(`Failed to fetch files: ${await files.text()}`);
-      }
-
-      const versions = (await files.json()) as PythonBuilds;
+      const { repo, dataSource, tagName, versions } = await fetchUvBuilds(githubToken);
 
       // Apply filters
       const filters = {
@@ -106,7 +125,7 @@ app.get("/", async (ctx) => {
       return {
         data: {
           repo,
-          dataSource: path,
+          dataSource,
           updated: now,
           tagName,
           versions: transformedVersions,

@@ -3,20 +3,51 @@ import { Octokit } from "@/utils/octokit";
 import { Hono } from "hono";
 import { env } from 'hono/adapter'
 import { withCache, createCacheKey } from "../../utils/cache-helper";
+import { fetchUvBuilds, filterBuilds, toVersionList } from "./uv-build";
 
 const app = new Hono<HonoEnv>();
 
+function isUvBuildEnabled(value?: string): boolean {
+  return ["1", "true", "yes", "on", "uv-build", "uv_build"].includes(
+    value?.toLowerCase() ?? ""
+  );
+}
+
 app.get("/", async (ctx) => {
-  const githubToken = env(ctx).GITHUB_TOKEN;
+  const { GITHUB_TOKEN: githubToken, PYTHON_USE_UV_BUILD } = env(ctx);
   assert(githubToken, "GITHUB_TOKEN is not set", 503);
 
+  const useUvBuild = isUvBuildEnabled(PYTHON_USE_UV_BUILD);
   const cacheKey = createCacheKey(ctx.req.raw);
   const skipCache = Boolean(ctx.req.query("force"));
 
   return withCache(
     ctx,
-    { cacheName: "pyenv-versions", skipCache, cacheKey },
+    {
+      cacheName: useUvBuild ? "pyenv-versions-from-uv-build" : "pyenv-versions",
+      skipCache,
+      cacheKey,
+    },
     async () => {
+      if (useUvBuild) {
+        const { tagName, versions } = await fetchUvBuilds(githubToken);
+        const filteredVersions = filterBuilds(versions, {
+          os: ctx.req.query("os"),
+          arch: ctx.req.query("arch"),
+          libc: ctx.req.query("libc"),
+        });
+        const now = new Date().toUTCString();
+
+        return {
+          data: {
+            updated: now,
+            tagName,
+            versions: toVersionList(filteredVersions),
+          },
+          updated: now,
+        };
+      }
+
       const repo = "pyenv/pyenv";
       const octokit = new Octokit(githubToken);
 

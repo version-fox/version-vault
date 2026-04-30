@@ -4,4 +4,5 @@ declare interface HonoEnv {
 
 declare interface Variables {
   GITHUB_TOKEN: string;
+  PYTHON_USE_UV_BUILD?: string;
 }
