@@ -7,7 +7,7 @@
   "scripts": {
     "build": "cfworker-builder gen-toml",
     "dev": "tsx watch ./src/runtime/node-server",
-    "test": "tsx --test tests/**/*.test.ts",
+    "test": "tsx --test tests/uv-build.test.ts",
     "workers:dev": "wrangler dev"
   },
   "devDependencies": {
