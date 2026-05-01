@@ -86,3 +86,31 @@ export interface PythonBuildInfo {
  * @example { "cpython-3.15.0a1-darwin-aarch64-none": { name: "cpython", ... } }
  */
 export type PythonBuilds = Record<string, PythonBuildInfo>;
+
+export type PythonBuildStandaloneVariant = "default" | "freethreaded";
+
+export interface PythonBuildStandalonePlatform {
+  os: string;
+  arch: string;
+  libc?: string | null;
+}
+
+export interface PythonBuildStandaloneAsset {
+  size?: number;
+  content_type?: string;
+  created_at?: string;
+  updated_at?: string;
+  sha256?: string;
+}
+
+export interface PythonBuildStandaloneItem {
+  implementation: string;
+  version: string;
+  display_version: string;
+  variant: PythonBuildStandaloneVariant;
+  release: string;
+  filename: string;
+  url: string;
+  platform: PythonBuildStandalonePlatform;
+  asset?: PythonBuildStandaloneAsset;
+}

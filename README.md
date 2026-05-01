@@ -11,11 +11,13 @@ curl https://vault.vfox.dev/python/pyenv
 
 ### uv-build versions
 
-Fetch the Python builds list provided by [`astral-sh/uv`](https://github.com/astral-sh/uv) (sourced from `crates/uv-python/download-metadata.json` of the latest release).
+Fetch Python Build Standalone release assets from [`astral-sh/python-build-standalone`](https://github.com/astral-sh/python-build-standalone/releases).
 
 ```sh
 curl https://vault.vfox.dev/python/uv-build
 ```
+
+The response contains an `items` array. Each item includes parsed build fields, the release tag, filename, download URL, platform details, and GitHub release asset metadata such as `sha256` when GitHub provides an asset digest.
 
 You can narrow down the result by passing query parameters. Filtering happens server-side, so the response is smaller and faster to consume.
 
@@ -23,7 +25,7 @@ You can narrow down the result by passing query parameters. Filtering happens se
 | ----- | ----------- | -------------- |
 | `os`   | Operating system / platform | `darwin`, `linux`, `windows` |
 | `arch` | CPU architecture family     | `x86_64`, `aarch64`, `armv7` |
-| `libc` | C library type              | `none`, `gnu`, `musl` |
+| `libc` | Linux C library type        | `gnu`, `musl`, `gnueabihf` |
 
 Examples:
 
