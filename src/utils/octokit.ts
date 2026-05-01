@@ -22,6 +22,17 @@ export class Octokit {
     return response;
   }
 
+  async listReleases(repo: string, page = 1, perPage = 100): Promise<Response> {
+    const url = `https://api.github.com/repos/${repo}/releases?page=${page}&per_page=${perPage}`;
+    const response = await this.fetch(url, {
+      headers: {
+        "X-GitHub-Api-Version": " 2022-11-28",
+        Accept: "application/vnd.github+json",
+      },
+    });
+    return response;
+  }
+
   async listPath(repo: string, path: string, ref: string): Promise<any> {
     const url = `https://api.github.com/repos/${repo}/contents/${path}?ref=${ref}`;
     const response = await this.fetch(url, {
