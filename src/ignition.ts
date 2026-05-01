@@ -33,7 +33,7 @@ export const ignition = () => {
       }
       h1 {
         margin: 0 0 8px;
-        font-size: clamp(40px, 8vw, 84px);
+        font-size: clamp(28px, 5vw, 44px);
         line-height: 1;
         letter-spacing: -0.08em;
       }
@@ -42,12 +42,12 @@ export const ignition = () => {
       }
       .tagline {
         margin: 0 0 44px;
-        font-size: 22px;
-        text-align: center;
+        font-size: 14px;
+        text-align: left;
       }
       h2 {
         margin: 36px 0 10px;
-        font-size: 28px;
+        font-size: 16px;
         font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         text-transform: uppercase;
       }
@@ -55,26 +55,38 @@ export const ignition = () => {
         color: inherit;
       }
       .endpoint {
-        margin: 0 0 34px 64px;
+        margin: 0 0 34px;
+      }
+      .endpoint-list {
+        margin: 0 0 28px;
+        padding: 0;
+        list-style: none;
+        font-size: 14px;
+      }
+      .endpoint-list li {
+        margin: 0 0 6px;
+      }
+      .endpoint-list a {
+        font-weight: 700;
       }
       .curl {
         margin: 0 0 12px;
         color: #000;
-        font-size: clamp(20px, 3vw, 30px);
+        font-size: clamp(14px, 1.8vw, 16px);
         font-weight: 700;
         white-space: pre-wrap;
         word-break: break-word;
       }
       pre {
-        margin: 0 0 26px 88px;
+        margin: 0 0 26px;
         color: #444;
-        font-size: clamp(16px, 2.5vw, 26px);
+        font-size: clamp(12px, 1.5vw, 14px);
         line-height: 1.45;
         white-space: pre-wrap;
       }
       .links {
         margin-top: 44px;
-        font-size: 18px;
+        font-size: 14px;
       }
       @media (max-width: 640px) {
         body {
@@ -83,12 +95,6 @@ export const ignition = () => {
         .tagline {
           text-align: left;
         }
-        .endpoint {
-          margin-left: 0;
-        }
-        pre {
-          margin-left: 24px;
-        }
       }
     </style>
   </head>
@@ -96,6 +102,13 @@ export const ignition = () => {
     <main>
       <h1>version<span>-</span>vault</h1>
       <p class="tagline">Version metadata responses are JSON-encoded.</p>
+
+      <h2>ENDPOINTS</h2>
+      <ul class="endpoint-list">
+        <li><a href="/">/</a> This page.</li>
+        <li><a href="/python/pyenv">/python/pyenv</a> Pyenv Python versions.</li>
+        <li><a href="/python/uv-build">/python/uv-build</a> Python Build Standalone assets.</li>
+      </ul>
 
       <h2>Examples</h2>
       <section class="endpoint" aria-label="pyenv Python versions">
