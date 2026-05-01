@@ -2,7 +2,6 @@ name = "version-vault"
 compatibility_date = "2025-01-25"
 
 main = "./src/index.ts"
-workers_dev = false
 vars = { ENVIRONMENT = "dev" }
 
 [observability.logs]
