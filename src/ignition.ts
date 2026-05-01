@@ -4,12 +4,6 @@ import pythonPyenvVersions from './sdks/python/pyenv';
 import { errorHandler } from "@/utils/error-handler";
 
 const repositoryUrl = "https://github.com/version-fox/version-vault";
-const endpoints = [
-  { href: "/", description: "This page." },
-  { href: "/python/pyenv", description: "Pyenv Python versions." },
-  { href: "/python/uv-build", description: "Python Build Standalone assets." },
-  { href: "/pyenv-versions", description: "Legacy pyenv Python versions." },
-];
 
 export const ignition = () => {
   const app = new Hono<HonoEnv>();
@@ -117,7 +111,10 @@ export const ignition = () => {
 
       <h2>ENDPOINTS</h2>
       <ul class="endpoint-list">
-        ${endpoints.map((endpoint) => `<li><a href="${endpoint.href}">${endpoint.href}</a> ${endpoint.description}</li>`).join("\n        ")}
+        <li><a href="/">/</a> This page.</li>
+        <li><a href="/python/pyenv">/python/pyenv</a> Pyenv Python versions.</li>
+        <li><a href="/python/uv-build">/python/uv-build</a> Python Build Standalone assets.</li>
+        <li><a href="/pyenv-versions">/pyenv-versions</a> Legacy pyenv Python versions.</li>
       </ul>
 
       <h2>Examples</h2>

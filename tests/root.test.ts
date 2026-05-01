@@ -10,7 +10,7 @@ test("root route renders landing page with examples and endpoint links", async (
   assert.match(response.headers.get("content-type") ?? "", /^text\/html/);
   assert.match(body, /https:\/\/github\.com\/version-fox\/version-vault/);
   assert.match(body, /<h2>ENDPOINTS<\/h2>/);
-  assert.match(body, /href="\/"/);
+  assert.match(body, /<a href="\/">\/<\/a>/);
   assert.match(body, /This page\./);
   assert.match(body, /href="\/python\/pyenv"/);
   assert.match(body, /Pyenv Python versions\./);
