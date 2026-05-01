@@ -104,9 +104,10 @@ function parseAsset(
     return null;
   }
 
-  const match = asset.name.match(
-    /^([A-Za-z0-9_]+)-([0-9]+\.[0-9]+\.[0-9]+[A-Za-z0-9]*)\+([0-9]{8})-(.+)\.(tar\.gz|tar\.zst)$/
-  );
+  const filenamePattern =
+    // implementation-version+release-platform-and-build-suffix.archive
+    /^([A-Za-z0-9_]+)-([0-9]+\.[0-9]+\.[0-9]+[A-Za-z0-9]*)\+([0-9]{8})-(.+)\.(tar\.gz|tar\.zst)$/;
+  const match = asset.name.match(filenamePattern);
 
   if (!match) {
     return null;
@@ -242,7 +243,9 @@ async function listAllReleases(octokit: Octokit, repo: string): Promise<GitHubRe
     }
   }
 
-  throw new Error(`Reached maximum release pages: ${MAX_RELEASE_PAGES}`);
+  throw new Error(
+    `Exceeded maximum allowed release pages (${MAX_RELEASE_PAGES}). Consider adjusting pagination limits.`
+  );
 }
 
 app.get("/", async (ctx) => {
