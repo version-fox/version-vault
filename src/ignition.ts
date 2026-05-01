@@ -4,6 +4,12 @@ import pythonPyenvVersions from './sdks/python/pyenv';
 import { errorHandler } from "@/utils/error-handler";
 
 const repositoryUrl = "https://github.com/version-fox/version-vault";
+const endpoints = [
+  { href: "/", path: "/", description: "This page." },
+  { href: "/python/pyenv", path: "/python/pyenv", description: "Pyenv Python versions." },
+  { href: "/python/uv-build", path: "/python/uv-build", description: "Python Build Standalone assets." },
+  { href: "/pyenv-versions", path: "/pyenv-versions", description: "Legacy pyenv Python versions." },
+];
 
 export const ignition = () => {
   const app = new Hono<HonoEnv>();
@@ -33,7 +39,7 @@ export const ignition = () => {
       }
       h1 {
         margin: 0 0 8px;
-        font-size: clamp(34px, 7vw, 64px);
+        font-size: clamp(28px, 5vw, 44px);
         line-height: 1;
         letter-spacing: -0.08em;
       }
@@ -42,12 +48,12 @@ export const ignition = () => {
       }
       .tagline {
         margin: 0 0 44px;
-        font-size: 18px;
+        font-size: 14px;
         text-align: center;
       }
       h2 {
         margin: 36px 0 10px;
-        font-size: 22px;
+        font-size: 16px;
         font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         text-transform: uppercase;
       }
@@ -57,10 +63,22 @@ export const ignition = () => {
       .endpoint {
         margin: 0 0 34px 64px;
       }
+      .endpoint-list {
+        margin: 0 0 28px;
+        padding: 0;
+        list-style: none;
+        font-size: 14px;
+      }
+      .endpoint-list li {
+        margin: 0 0 6px;
+      }
+      .endpoint-list a {
+        font-weight: 700;
+      }
       .curl {
         margin: 0 0 12px;
         color: #000;
-        font-size: clamp(16px, 2.2vw, 22px);
+        font-size: clamp(14px, 1.8vw, 16px);
         font-weight: 700;
         white-space: pre-wrap;
         word-break: break-word;
@@ -68,13 +86,13 @@ export const ignition = () => {
       pre {
         margin: 0 0 26px 88px;
         color: #444;
-        font-size: clamp(14px, 1.8vw, 18px);
+        font-size: clamp(12px, 1.5vw, 14px);
         line-height: 1.45;
         white-space: pre-wrap;
       }
       .links {
         margin-top: 44px;
-        font-size: 16px;
+        font-size: 14px;
       }
       @media (max-width: 640px) {
         body {
@@ -96,6 +114,11 @@ export const ignition = () => {
     <main>
       <h1>version<span>-</span>vault</h1>
       <p class="tagline">Version metadata responses are JSON-encoded.</p>
+
+      <h2>ENDPOINTS</h2>
+      <ul class="endpoint-list">
+        ${endpoints.map((endpoint) => `<li><a href="${endpoint.href}">${endpoint.path}</a> ${endpoint.description}</li>`).join("\n        ")}
+      </ul>
 
       <h2>Examples</h2>
       <section class="endpoint" aria-label="pyenv Python versions">

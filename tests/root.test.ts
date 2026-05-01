@@ -9,6 +9,11 @@ test("root route renders landing page with examples and endpoint links", async (
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html/);
   assert.match(body, /https:\/\/github\.com\/version-fox\/version-vault/);
+  assert.match(body, /<h2>ENDPOINTS<\/h2>/);
+  assert.match(body, /<a href="\/">\/<\/a> This page\./);
+  assert.match(body, /<a href="\/python\/pyenv">\/python\/pyenv<\/a> Pyenv Python versions\./);
+  assert.match(body, /<a href="\/python\/uv-build">\/python\/uv-build<\/a> Python Build Standalone assets\./);
+  assert.match(body, /<a href="\/pyenv-versions">\/pyenv-versions<\/a> Legacy pyenv Python versions\./);
   assert.match(body, /\$ curl https:\/\/vault\.vfox\.dev\/python\/pyenv/);
   assert.match(body, /\$ curl https:\/\/vault\.vfox\.dev\/python\/uv-build/);
   assert.match(body, /https:\/\/vault\.vfox\.dev\/python\/uv-build\?os=linux&amp;arch=aarch64&amp;libc=gnu/);
