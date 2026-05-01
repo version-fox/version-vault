@@ -242,7 +242,7 @@ async function listAllReleases(octokit: Octokit, repo: string): Promise<GitHubRe
     }
   }
 
-  throw new Error(`Exceeded maximum release pages: ${MAX_RELEASE_PAGES}`);
+  throw new Error(`Reached maximum release pages: ${MAX_RELEASE_PAGES}`);
 }
 
 app.get("/", async (ctx) => {
