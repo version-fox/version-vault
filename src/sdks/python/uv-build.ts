@@ -244,11 +244,13 @@ app.get("/", async (ctx) => {
 
       const release = (await result.json()) as GitHubRelease;
       const tagName = release.tag_name;
-      const items = tagName && release.assets
-        ? release.assets
+      let items: PythonBuildStandaloneItem[] = [];
+
+      if (tagName && release.assets) {
+        items = release.assets
           .map((asset) => parseAsset(tagName, asset))
-          .filter((item): item is PythonBuildStandaloneItem => Boolean(item))
-        : [];
+          .filter((item): item is PythonBuildStandaloneItem => Boolean(item));
+      }
 
       // Apply filters
       const filters = {
