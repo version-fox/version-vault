@@ -78,14 +78,14 @@ function parsePlatform(parts: string[]): PythonBuildStandalonePlatform | null {
   return null;
 }
 
-function parseSha256(digest?: string): string | undefined {
+function getSha256FromDigest(digest?: string): string | undefined {
   const match = digest?.match(/^sha256:([a-fA-F0-9]{64})$/);
   return match?.[1];
 }
 
 function buildAssetMetadata(asset: GitHubReleaseAsset): PythonBuildStandaloneAsset | undefined {
   const metadata: PythonBuildStandaloneAsset = {};
-  const sha256 = parseSha256(asset.digest);
+  const sha256 = getSha256FromDigest(asset.digest);
 
   if (typeof asset.size === "number") metadata.size = asset.size;
   if (asset.content_type) metadata.content_type = asset.content_type;
@@ -244,7 +244,7 @@ async function listAllReleases(octokit: Octokit, repo: string): Promise<GitHubRe
   }
 
   throw new Error(
-    `Exceeded maximum allowed release pages (${MAX_RELEASE_PAGES}). Consider adjusting pagination limits.`
+    `Exceeded maximum allowed release pages (${MAX_RELEASE_PAGES}).`
   );
 }
 

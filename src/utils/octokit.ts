@@ -26,7 +26,7 @@ export class Octokit {
     const url = `https://api.github.com/repos/${repo}/releases?page=${page}&per_page=${perPage}`;
     const response = await this.fetch(url, {
       headers: {
-        "X-GitHub-Api-Version": " 2022-11-28",
+        "X-GitHub-Api-Version": "2022-11-28",
         Accept: "application/vnd.github+json",
       },
     });
@@ -37,7 +37,7 @@ export class Octokit {
     const url = `https://api.github.com/repos/${repo}/contents/${path}?ref=${ref}`;
     const response = await this.fetch(url, {
       headers: {
-        "X-GitHub-Api-Version": " 2022-11-28",
+        "X-GitHub-Api-Version": "2022-11-28",
         Accept: "application/vnd.github+json",
       },
     });
@@ -50,7 +50,7 @@ export class Octokit {
     const url = `https://raw.githubusercontent.com/${repo}/${ref}/${path}`;
     const response = await this.fetch(url, {
       headers: {
-        "X-GitHub-Api-Version": " 2022-11-28",
+        "X-GitHub-Api-Version": "2022-11-28",
         Accept: "application/vnd.github.raw",
       },
     });
