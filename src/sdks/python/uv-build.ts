@@ -78,7 +78,7 @@ function parsePlatform(parts: string[]): PythonBuildStandalonePlatform | null {
 }
 
 function parseSha256(digest?: string): string | undefined {
-  const match = digest?.match(/^sha256:([a-f0-9]{64})$/i);
+  const match = digest?.match(/^sha256:([a-fA-F0-9]{64})$/);
   return match?.[1].toLowerCase();
 }
 
@@ -257,12 +257,14 @@ app.get("/", async (ctx) => {
       const octokit = new Octokit(githubToken);
       const releases = await listAllReleases(octokit, repo);
       const items = releases.flatMap((release) => {
-        if (!release.tag_name || !release.assets) {
+        const tagName = release.tag_name;
+
+        if (!tagName || !release.assets) {
           return [];
         }
 
         return release.assets
-          .map((asset) => parseAsset(release.tag_name!, asset))
+          .map((asset) => parseAsset(tagName, asset))
           .filter((item): item is PythonBuildStandaloneItem => Boolean(item));
       });
 
