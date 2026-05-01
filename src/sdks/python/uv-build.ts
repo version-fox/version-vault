@@ -12,6 +12,7 @@ import { withCache, createCacheKey } from "../../utils/cache-helper";
 
 const app = new Hono<HonoEnv>();
 const RELEASES_PER_PAGE = 100;
+const MAX_RELEASE_PAGES = 10;
 
 interface GitHubReleaseAsset {
   name?: string;
@@ -79,7 +80,7 @@ function parsePlatform(parts: string[]): PythonBuildStandalonePlatform | null {
 
 function parseSha256(digest?: string): string | undefined {
   const match = digest?.match(/^sha256:([a-fA-F0-9]{64})$/);
-  return match?.[1].toLowerCase();
+  return match?.[1];
 }
 
 function buildAssetMetadata(asset: GitHubReleaseAsset): PythonBuildStandaloneAsset | undefined {
@@ -226,7 +227,7 @@ function filterItems(
 async function listAllReleases(octokit: Octokit, repo: string): Promise<GitHubRelease[]> {
   const releases: GitHubRelease[] = [];
 
-  for (let page = 1; ; page++) {
+  for (let page = 1; page <= MAX_RELEASE_PAGES; page++) {
     const result = await octokit.listReleases(repo, page, RELEASES_PER_PAGE);
 
     if (!result.ok) {
@@ -240,6 +241,8 @@ async function listAllReleases(octokit: Octokit, repo: string): Promise<GitHubRe
       return releases;
     }
   }
+
+  throw new Error(`Exceeded maximum release pages: ${MAX_RELEASE_PAGES}`);
 }
 
 app.get("/", async (ctx) => {
