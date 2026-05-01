@@ -272,4 +272,10 @@ app.get("/", async (ctx) => {
   );
 });
 
+export const uvBuildTestHelpers = {
+  parseAsset,
+  filterItems,
+  sortItems,
+};
+
 export default app;
