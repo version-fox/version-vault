@@ -11,8 +11,6 @@ import {
 import { withCache, createCacheKey } from "../../utils/cache-helper";
 
 const app = new Hono<HonoEnv>();
-const RELEASES_PER_PAGE = 100;
-const MAX_RELEASE_PAGES = 10;
 
 interface GitHubReleaseAsset {
   name?: string;
@@ -225,29 +223,6 @@ function filterItems(
   });
 }
 
-async function listAllReleases(octokit: Octokit, repo: string): Promise<GitHubRelease[]> {
-  const releases: GitHubRelease[] = [];
-
-  for (let page = 1; page <= MAX_RELEASE_PAGES; page++) {
-    const result = await octokit.listReleases(repo, page, RELEASES_PER_PAGE);
-
-    if (!result.ok) {
-      throw new Error(`Failed to fetch releases: ${await result.text()}`);
-    }
-
-    const pageReleases = (await result.json()) as GitHubRelease[];
-    releases.push(...pageReleases);
-
-    if (pageReleases.length < RELEASES_PER_PAGE) {
-      return releases;
-    }
-  }
-
-  throw new Error(
-    `Exceeded maximum allowed release pages (${MAX_RELEASE_PAGES}).`
-  );
-}
-
 app.get("/", async (ctx) => {
   const githubToken = env(ctx).GITHUB_TOKEN;
   assert(githubToken, "GITHUB_TOKEN is not set", 503);
@@ -261,18 +236,19 @@ app.get("/", async (ctx) => {
     async () => {
       const repo = "astral-sh/python-build-standalone";
       const octokit = new Octokit(githubToken);
-      const releases = await listAllReleases(octokit, repo);
-      const items = releases.flatMap((release) => {
-        const tagName = release.tag_name;
+      const result = await octokit.getLatestRelease(repo);
 
-        if (!tagName || !release.assets) {
-          return [];
-        }
+      if (!result.ok) {
+        throw new Error(`Failed to fetch latest release: ${await result.text()}`);
+      }
 
-        return release.assets
+      const release = (await result.json()) as GitHubRelease;
+      const tagName = release.tag_name;
+      const items = tagName && release.assets
+        ? release.assets
           .map((asset) => parseAsset(tagName, asset))
-          .filter((item): item is PythonBuildStandaloneItem => Boolean(item));
-      });
+          .filter((item): item is PythonBuildStandaloneItem => Boolean(item))
+        : [];
 
       // Apply filters
       const filters = {
