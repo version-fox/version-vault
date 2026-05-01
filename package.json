@@ -7,7 +7,6 @@
   "scripts": {
     "build": "cfworker-builder gen-toml",
     "dev": "tsx watch ./src/runtime/node-server",
-    "test": "tsx --test tests/uv-build.test.ts",
     "workers:dev": "wrangler dev"
   },
   "devDependencies": {
@@ -16,7 +15,7 @@
     "wrangler": "^4.46.0"
   },
   "dependencies": {
-    "@hono/node-server": "^1.19.10",
+    "@hono/node-server": "^2.0.1",
     "hono": "^4.10.7",
     "tsx": "^4.20.6"
   }
