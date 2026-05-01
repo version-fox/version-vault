@@ -5,10 +5,10 @@ import { errorHandler } from "@/utils/error-handler";
 
 const repositoryUrl = "https://github.com/version-fox/version-vault";
 const endpoints = [
-  { href: "/", path: "/", description: "This page." },
-  { href: "/python/pyenv", path: "/python/pyenv", description: "Pyenv Python versions." },
-  { href: "/python/uv-build", path: "/python/uv-build", description: "Python Build Standalone assets." },
-  { href: "/pyenv-versions", path: "/pyenv-versions", description: "Legacy pyenv Python versions." },
+  { href: "/", description: "This page." },
+  { href: "/python/pyenv", description: "Pyenv Python versions." },
+  { href: "/python/uv-build", description: "Python Build Standalone assets." },
+  { href: "/pyenv-versions", description: "Legacy pyenv Python versions." },
 ];
 
 export const ignition = () => {
@@ -117,7 +117,7 @@ export const ignition = () => {
 
       <h2>ENDPOINTS</h2>
       <ul class="endpoint-list">
-        ${endpoints.map((endpoint) => `<li><a href="${endpoint.href}">${endpoint.path}</a> ${endpoint.description}</li>`).join("\n        ")}
+        ${endpoints.map((endpoint) => `<li><a href="${endpoint.href}">${endpoint.href}</a> ${endpoint.description}</li>`).join("\n        ")}
       </ul>
 
       <h2>Examples</h2>
