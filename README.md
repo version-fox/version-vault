@@ -25,7 +25,7 @@ You can narrow down the result by passing query parameters. Filtering happens se
 | ----- | ----------- | -------------- |
 | `os`   | Operating system / platform | `darwin`, `linux`, `windows` |
 | `arch` | CPU architecture family     | `x86_64`, `aarch64`, `armv7` |
-| `libc` | C library type              | `none`, `gnu`, `musl` |
+| `libc` | Linux C library type        | `gnu`, `musl`, `gnueabihf` |
 
 Examples:
 
