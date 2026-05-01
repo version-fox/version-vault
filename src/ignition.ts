@@ -20,73 +20,125 @@ export const ignition = () => {
     <title>version-vault</title>
     <style>
       :root {
-        color-scheme: light dark;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color-scheme: light;
+        font-family: "Courier New", Courier, monospace;
       }
       body {
-        max-width: 760px;
+        max-width: 920px;
         margin: 0 auto;
-        padding: 48px 24px;
-        line-height: 1.6;
+        padding: 40px 24px 72px;
+        color: #222;
+        background: #fff;
+        line-height: 1.5;
       }
-      code, input {
-        font: inherit;
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(40px, 8vw, 84px);
+        line-height: 1;
+        letter-spacing: -0.08em;
       }
-      code {
-        border-radius: 6px;
-        padding: 2px 6px;
-        background: color-mix(in srgb, CanvasText 10%, Canvas);
+      h1 span {
+        letter-spacing: 0;
       }
-      form {
-        display: grid;
-        gap: 12px;
-        margin: 24px 0;
-        padding: 20px;
-        border: 1px solid color-mix(in srgb, CanvasText 20%, Canvas);
-        border-radius: 12px;
+      .tagline {
+        margin: 0 0 44px;
+        font-size: 22px;
+        text-align: center;
       }
-      label {
-        display: grid;
-        gap: 4px;
+      h2 {
+        margin: 36px 0 10px;
+        font-size: 28px;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        text-transform: uppercase;
       }
-      input, button {
-        border: 1px solid color-mix(in srgb, CanvasText 25%, Canvas);
-        border-radius: 8px;
-        padding: 8px 10px;
+      a {
+        color: inherit;
       }
-      button {
-        cursor: pointer;
+      .endpoint {
+        margin: 0 0 34px 64px;
+      }
+      .curl {
+        margin: 0 0 12px;
+        color: #000;
+        font-size: clamp(20px, 3vw, 30px);
+        font-weight: 700;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      pre {
+        margin: 0 0 26px 88px;
+        color: #444;
+        font-size: clamp(16px, 2.5vw, 26px);
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+      .links {
+        margin-top: 44px;
+        font-size: 18px;
+      }
+      @media (max-width: 640px) {
+        body {
+          padding: 32px 18px 56px;
+        }
+        .tagline {
+          text-align: left;
+        }
+        .endpoint {
+          margin-left: 0;
+        }
+        pre {
+          margin-left: 24px;
+        }
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>version-vault</h1>
-      <p>Version metadata service for vfox SDK plugins.</p>
-      <p><a href="${repositoryUrl}">View this project on GitHub</a></p>
+      <h1>version<span>-</span>vault</h1>
+      <p class="tagline">Version metadata responses are JSON-encoded.</p>
 
-      <h2>Endpoints</h2>
-      <ul>
-        <li><a href="/python/pyenv"><code>/python/pyenv</code></a> - pyenv Python versions</li>
-        <li><a href="/python/uv-build"><code>/python/uv-build</code></a> - Python Build Standalone assets</li>
-      </ul>
+      <h2>Examples</h2>
+      <section class="endpoint" aria-label="pyenv Python versions">
+        <p class="curl">$ curl https://vault.vfox.dev/python/pyenv</p>
+        <pre>{
+  "items": [
+    {
+      "version": "3.13.3",
+      "url": "https://www.python.org/ftp/python/3.13.3/Python-3.13.3.tar.xz"
+    }
+  ]
+}</pre>
+      </section>
 
-      <h2>Try uv-build filters</h2>
-      <form action="/python/uv-build" method="get">
-        <label>
-          OS
-          <input name="os" placeholder="linux, darwin, windows">
-        </label>
-        <label>
-          Architecture
-          <input name="arch" placeholder="x86_64, aarch64, armv7">
-        </label>
-        <label>
-          libc
-          <input name="libc" placeholder="gnu, musl, gnueabihf">
-        </label>
-        <button type="submit">Fetch versions</button>
-      </form>
+      <section class="endpoint" aria-label="Python Build Standalone assets">
+        <p class="curl">$ curl https://vault.vfox.dev/python/uv-build</p>
+        <pre>{
+  "items": [
+    {
+      "display_version": "3.13.3",
+      "platform": {
+        "os": "linux",
+        "arch": "x86_64",
+        "libc": "gnu"
+      }
+    }
+  ]
+}</pre>
+      </section>
+
+      <section class="endpoint" aria-label="Filtered Python Build Standalone assets">
+        <p class="curl">$ curl "https://vault.vfox.dev/python/uv-build?os=linux&amp;arch=aarch64&amp;libc=gnu"</p>
+        <pre>{
+  "items": [
+    {
+      "display_version": "3.13.3",
+      "filename": "cpython-3.13.3+20260501-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+    }
+  ]
+}</pre>
+      </section>
+
+      <p class="links"><a href="/python/pyenv">/python/pyenv</a> · <a href="/python/uv-build">/python/uv-build</a> · <a href="${repositoryUrl}">GitHub</a></p>
     </main>
   </body>
 </html>`);
