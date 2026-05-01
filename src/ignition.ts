@@ -33,7 +33,7 @@ export const ignition = () => {
       }
       h1 {
         margin: 0 0 8px;
-        font-size: clamp(40px, 8vw, 84px);
+        font-size: clamp(34px, 7vw, 64px);
         line-height: 1;
         letter-spacing: -0.08em;
       }
@@ -42,12 +42,12 @@ export const ignition = () => {
       }
       .tagline {
         margin: 0 0 44px;
-        font-size: 22px;
+        font-size: 18px;
         text-align: center;
       }
       h2 {
         margin: 36px 0 10px;
-        font-size: 28px;
+        font-size: 22px;
         font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         text-transform: uppercase;
       }
@@ -60,7 +60,7 @@ export const ignition = () => {
       .curl {
         margin: 0 0 12px;
         color: #000;
-        font-size: clamp(20px, 3vw, 30px);
+        font-size: clamp(16px, 2.2vw, 22px);
         font-weight: 700;
         white-space: pre-wrap;
         word-break: break-word;
@@ -68,13 +68,13 @@ export const ignition = () => {
       pre {
         margin: 0 0 26px 88px;
         color: #444;
-        font-size: clamp(16px, 2.5vw, 26px);
+        font-size: clamp(14px, 1.8vw, 18px);
         line-height: 1.45;
         white-space: pre-wrap;
       }
       .links {
         margin-top: 44px;
-        font-size: 18px;
+        font-size: 16px;
       }
       @media (max-width: 640px) {
         body {
