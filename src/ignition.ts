@@ -43,7 +43,7 @@ export const ignition = () => {
       .tagline {
         margin: 0 0 44px;
         font-size: 14px;
-        text-align: center;
+        text-align: left;
       }
       h2 {
         margin: 36px 0 10px;
@@ -55,7 +55,7 @@ export const ignition = () => {
         color: inherit;
       }
       .endpoint {
-        margin: 0 0 34px 64px;
+        margin: 0 0 34px;
       }
       .endpoint-list {
         margin: 0 0 28px;
@@ -78,7 +78,7 @@ export const ignition = () => {
         word-break: break-word;
       }
       pre {
-        margin: 0 0 26px 88px;
+        margin: 0 0 26px;
         color: #444;
         font-size: clamp(12px, 1.5vw, 14px);
         line-height: 1.45;
@@ -95,12 +95,6 @@ export const ignition = () => {
         .tagline {
           text-align: left;
         }
-        .endpoint {
-          margin-left: 0;
-        }
-        pre {
-          margin-left: 24px;
-        }
       }
     </style>
   </head>
@@ -114,7 +108,6 @@ export const ignition = () => {
         <li><a href="/">/</a> This page.</li>
         <li><a href="/python/pyenv">/python/pyenv</a> Pyenv Python versions.</li>
         <li><a href="/python/uv-build">/python/uv-build</a> Python Build Standalone assets.</li>
-        <li><a href="/pyenv-versions">/pyenv-versions</a> Legacy pyenv Python versions.</li>
       </ul>
 
       <h2>Examples</h2>

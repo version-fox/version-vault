@@ -16,8 +16,7 @@ test("root route renders landing page with examples and endpoint links", async (
   assert.match(body, /Pyenv Python versions\./);
   assert.match(body, /href="\/python\/uv-build"/);
   assert.match(body, /Python Build Standalone assets\./);
-  assert.match(body, /href="\/pyenv-versions"/);
-  assert.match(body, /Legacy pyenv Python versions\./);
+  assert.doesNotMatch(body, /\/pyenv-versions/);
   assert.match(body, /\$ curl https:\/\/vault\.vfox\.dev\/python\/pyenv/);
   assert.match(body, /\$ curl https:\/\/vault\.vfox\.dev\/python\/uv-build/);
   assert.match(body, /https:\/\/vault\.vfox\.dev\/python\/uv-build\?os=linux&amp;arch=aarch64&amp;libc=gnu/);
