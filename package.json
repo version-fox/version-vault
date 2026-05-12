@@ -12,7 +12,7 @@
     "workers:dev": "wrangler dev"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20251014.0",
+    "@cloudflare/workers-types": "4.20260511.1",
     "@opensumi/cfworker-builder": "^1.0.3",
     "wrangler": "^4.46.0"
   },
